@@ -55,9 +55,12 @@ cp -R .claude/commands/. ~/.claude/commands/ && cp -R .claude/agents/. ~/.claude
 
 ## Status
 
-**P1** — `/contribute:solve` against one local repo, manual push, with the `gatekeeper` subagent
-built and wired in: the solve loop runs every fix through the cold-context QA gate before staging.
-See [`docs/SPEC.md`](docs/SPEC.md) for the full design and phase plan. Eval harness in [`eval/`](eval/).
+**P2 (slice 1)** — `/contribute:solve` end to end: the solve loop runs every fix through the
+cold-context `gatekeeper` QA gate, then (gated) forks the upstream repo if needed, pushes the
+`fix/issue-<n>` branch, and opens a PR — halting for explicit human approval before each GitHub
+write. Remaining P2 slices (revise/reply/status, CLA detection, resume/reconstruction) are not
+built yet. See [`docs/SPEC.md`](docs/SPEC.md) for the full design and phase plan. Eval harness in
+[`eval/`](eval/).
 
 ## Eval
 
