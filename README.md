@@ -32,8 +32,9 @@ your local checkout.
 
 ## Status
 
-**P0 / v0** — `/contribute:solve` against one local repo, manual push. See [`docs/SPEC.md`](docs/SPEC.md)
-for the full design and phase plan. Eval harness in [`eval/`](eval/).
+**P1** — `/contribute:solve` against one local repo, manual push, with the `gatekeeper` subagent
+built and wired in: the solve loop runs every fix through the cold-context QA gate before staging.
+See [`docs/SPEC.md`](docs/SPEC.md) for the full design and phase plan. Eval harness in [`eval/`](eval/).
 
 ## Eval
 
