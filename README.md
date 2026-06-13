@@ -22,6 +22,29 @@ the command, pulling reusable skills (`git-fork-workflow`, `cla-detect`, `commit
 `debugging`). GitHub access is via the official GitHub MCP server; git and build/test run on
 your local checkout.
 
+## Install / sync
+
+The command (`/contribute:solve`) and its subagents (e.g. `gatekeeper`) must live in your global
+Claude Code config (`~/.claude/`) so they work from **any** repo you run them in — not just this
+one. After cloning, or whenever you update them here, sync the runtime definitions globally.
+
+**Windows (PowerShell):**
+
+```powershell
+./sync.ps1
+```
+
+This copies only `.claude/commands/` and `.claude/agents/` into `~/.claude/` (overwriting). It
+intentionally leaves `settings.json`, `hooks/`, and `soul.md` alone — those are project-local or
+personal.
+
+**macOS / Linux:** the same thing is a one-liner:
+
+```bash
+mkdir -p ~/.claude/commands ~/.claude/agents
+cp -R .claude/commands/. ~/.claude/commands/ && cp -R .claude/agents/. ~/.claude/agents/
+```
+
 ## Design principles
 
 - **Stateless by ID** — GitHub is the source of truth; state is re-fetched, not stored.
