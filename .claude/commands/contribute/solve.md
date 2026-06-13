@@ -27,9 +27,9 @@ The argument is: **$ARGUMENTS**
   - **Never** run `git reset --hard`, `git clean`, or `git checkout -- <file>` against files
     with uncommitted changes.
   - **No force-push. No auto-commit beyond what's needed. No auto-PR.** Anywhere. Ever, in v0.
-- **Out of scope for v0 — do NOT do any of these:** gatekeeper subagent, fork flow,
-  multi-repo, CLA/DCO detection, revise/reply/status, resume/branch-reconstruction. If the
-  task seems to need one, stop and tell the user it's a later phase.
+- **Out of scope — do NOT do any of these:** fork flow, multi-repo, CLA/DCO detection,
+  revise/reply/status, resume/branch-reconstruction. If the task seems to need one, stop and
+  tell the user it's a later phase. (The `gatekeeper` QA gate IS in scope — see Step 9.)
 
 Work through the steps below in order. Stop at the first hard error rather than improvising.
 
@@ -151,7 +151,7 @@ Then:
   conventions. No debug prints, no dead code, no unrelated churn.
 - Keep a precise list of every file you edit (you'll stage exactly these).
 
-## Step 8 — Verify (inline keystone check — no gatekeeper subagent in v0)
+## Step 8 — Verify the keystone (inline fail→pass evidence)
 
 Run the repo's test command and confirm both halves of the keystone:
 
@@ -166,13 +166,39 @@ tests** — the package the fix touches — not the whole-repo suite. Only run a
 "the suite" is just the repo's suite. The fail→pass keystone logic is identical either way;
 only the scope of the suite run changes.
 
-Do this inline yourself. **Do not** spin up a separate gatekeeper subagent — that's P1.
+Establish this fail→pass evidence inline yourself. This does **not** replace the QA gate — the
+`gatekeeper` subagent in Step 9 re-derives and re-verifies independently in a cold context.
 
 If the keystone doesn't pass, or the fix breaks other tests, iterate on Step 7 (don't widen
 scope to silence unrelated failures). If you can't get green, STOP and report honestly with
 the failing output.
 
-## Step 9 — Stage only your edits, show the diff, and STOP
+## Step 9 — Gatekeeper QA gate (cold-context, adversarial — before staging)
+
+Hand the fix to the independent QA gate **before** anything is staged. See SPEC §6 and
+`.claude/agents/gatekeeper.md`.
+
+- Invoke the **`gatekeeper`** subagent. Pass it **only two things**: the **issue** as fetched
+  in Step 2 (title, body, labels) and the **proposed diff** (the working-tree changes you made
+  in Steps 6–7 — e.g. `git diff` over exactly the files you edited). **Do NOT** pass your
+  reasoning, your repro notes, or this conversation: the gate's judgment must stay decorrelated
+  from yours. It re-derives the intended fix from the issue alone, then tries to break the diff.
+- The gatekeeper runs the hard gates (build + affected-package suite, genuine keystone fail→pass,
+  existing-test rule, diff-scope clean, no secrets, commit/changelog convention), the advisory
+  soft signals, and baseline SAST / dep audit. It returns **PASS**, **BOUNCE**, or **HALT**.
+- **PASS** → proceed to Step 10 (staging). Surface its soft-signal and vuln notes to the user as
+  advisory (they never block).
+- **BOUNCE** (mechanical hard-gate fail — suite red from the change, lint/format/type error,
+  missing-but-writable test) → go back to **Step 7**, fix exactly what it flagged, re-establish
+  Step 8, and re-invoke the gatekeeper. **Maximum 2 bounces.** If it still fails after the 2nd,
+  treat as HALT.
+- **HALT** (safety/judgment fail — secret in the diff, out-of-scope or leaked files, the fix
+  doesn't address the issue, or no genuine keystone is possible; or 2 bounces exhausted) →
+  **STOP. Do not stage.** Surface the gatekeeper's full report to the user and hand off. No retry.
+
+Proceed to staging **only** if the gatekeeper returns PASS (all hard gates pass).
+
+## Step 10 — Stage only your edits, show the diff, and STOP
 
 - Stage **only** the files you edited in Step 6–7, naming each one explicitly:
   `git add <file1> <file2> …`. **Never** `git add -A` / `git add .`.
