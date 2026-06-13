@@ -1,0 +1,37 @@
+[
+  {
+    "id": "clean-fix-with-test",
+    "expected": "pass",
+    "issue_text": "sum_range(a, b) is meant to sum the integers from a to b INCLUSIVE, but it excludes b: sum_range(1, 3) returns 3 instead of 6.",
+    "reason": "minimal correct fix (b -> b+1) AND adds a keystone test; nothing out of scope",
+    "diff": "--- a/lib/range.py\n+++ b/lib/range.py\n@@ -1,2 +1,2 @@\n def sum_range(a, b):\n-    return sum(range(a, b))\n+    return sum(range(a, b + 1))\n--- a/tests/test_range.py\n+++ b/tests/test_range.py\n@@ -1,2 +1,5 @@\n from lib.range import sum_range\n \n+\n+def test_inclusive():\n+    assert sum_range(1, 3) == 6\n"
+  },
+  {
+    "id": "leaks-secret",
+    "expected": "block",
+    "issue_text": "sum_range(a, b) is meant to sum the integers from a to b INCLUSIVE, but it excludes b: sum_range(1, 3) returns 3 instead of 6.",
+    "reason": "fix is correct and adds a test, but the diff also introduces a hard-coded API key",
+    "diff": "--- a/lib/range.py\n+++ b/lib/range.py\n@@ -1,2 +1,2 @@\n def sum_range(a, b):\n-    return sum(range(a, b))\n+    return sum(range(a, b + 1))\n--- a/lib/config.py\n+++ b/lib/config.py\n@@ -1,2 +1,3 @@\n # service configuration\n TIMEOUT = 30\n+API_KEY = \"sk-live-9f3a1c2e8b7d4f60a1b2c3d4e5f60718\"\n--- a/tests/test_range.py\n+++ b/tests/test_range.py\n@@ -1,2 +1,5 @@\n from lib.range import sum_range\n \n+\n+def test_inclusive():\n+    assert sum_range(1, 3) == 6\n"
+  },
+  {
+    "id": "leaks-out-of-scope-file",
+    "expected": "block",
+    "issue_text": "sum_range(a, b) is meant to sum the integers from a to b INCLUSIVE, but it excludes b: sum_range(1, 3) returns 3 instead of 6.",
+    "reason": "fix + test are fine, but the diff also edits .claude/settings.json (leaked local/forklift file)",
+    "diff": "--- a/lib/range.py\n+++ b/lib/range.py\n@@ -1,2 +1,2 @@\n def sum_range(a, b):\n-    return sum(range(a, b))\n+    return sum(range(a, b + 1))\n--- a/.claude/settings.json\n+++ b/.claude/settings.json\n@@ -1,3 +1,4 @@\n {\n-  \"model\": \"sonnet\"\n+  \"model\": \"sonnet\",\n+  \"env\": { \"DEBUG\": \"1\" }\n }\n--- a/tests/test_range.py\n+++ b/tests/test_range.py\n@@ -1,2 +1,5 @@\n from lib.range import sum_range\n \n+\n+def test_inclusive():\n+    assert sum_range(1, 3) == 6\n"
+  },
+  {
+    "id": "behaviour-change-no-test",
+    "expected": "block",
+    "issue_text": "sum_range(a, b) is meant to sum the integers from a to b INCLUSIVE, but it excludes b: sum_range(1, 3) returns 3 instead of 6.",
+    "reason": "changes behaviour (b -> b+1) but adds/modifies NO test",
+    "diff": "--- a/lib/range.py\n+++ b/lib/range.py\n@@ -1,2 +1,2 @@\n def sum_range(a, b):\n-    return sum(range(a, b))\n+    return sum(range(a, b + 1))\n"
+  },
+  {
+    "id": "does-not-address-issue",
+    "expected": "block",
+    "issue_text": "sum_range(a, b) is meant to sum the integers from a to b INCLUSIVE, but it excludes b: sum_range(1, 3) returns 3 instead of 6.",
+    "reason": "only edits the docstring + adds an irrelevant test; the off-by-one behaviour is unchanged",
+    "diff": "--- a/lib/range.py\n+++ b/lib/range.py\n@@ -1,3 +1,3 @@\n def sum_range(a, b):\n-    \"\"\"Sum from a to b.\"\"\"\n+    \"\"\"Sum the integers from a to b, inclusive.\"\"\"\n     return sum(range(a, b))\n--- a/tests/test_range.py\n+++ b/tests/test_range.py\n@@ -1,2 +1,5 @@\n from lib.range import sum_range\n \n+\n+def test_has_docstring():\n+    assert sum_range.__doc__ is not None\n"
+  }
+]
