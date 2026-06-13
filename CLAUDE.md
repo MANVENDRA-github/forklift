@@ -9,11 +9,12 @@ forklift is an OSS-contribution agent that runs inside Claude Code: given a GitH
 it runs read → reproduce → fix → verify → drafted PR, halting at every human/legal gate.
 See `docs/SPEC.md` for the full design.
 
-**Current phase: P1** — `/contribute:solve` plus the `gatekeeper` subagent, one local repo,
-manual push. The gatekeeper is built and in scope: the solve loop now runs the fix through the
-cold-context QA gate (hard gates + soft signals) before staging. Do not build P2+ surface
-(fork flow, revise/reply/status commands, CLA/DCO detection, resume/branch-reconstruction). If
-asked to add those now, push back and point here.
+**Current phase: P2 (first slice)** — `/contribute:solve` with the `gatekeeper` subagent and
+**fork flow + gated PR creation**. The solve loop now runs the fix through the cold-context QA
+gate, then (gated) forks if needed, pushes `fix/issue-<n>`, and opens a PR against upstream —
+every GitHub write halts for explicit human approval. Do not build the remaining P2 slices yet
+(revise/reply/status commands, CLA/DCO detection, resume/branch-reconstruction). If asked to add
+those now, push back and point here.
 
 ## Key commands
 
