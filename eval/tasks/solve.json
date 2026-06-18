@@ -1,0 +1,11 @@
+[
+  {
+    "id": "demo-off-by-one",
+    "repo_url": "https://github.com/you/example-lib",
+    "base_commit": "abc1234",
+    "issue_text": "sum_range(a, b) excludes b; it should be inclusive.",
+    "test_cmd": "pytest -q tests/test_range.py",
+    "keystone_test_patch": "--- a/tests/test_range.py\n+++ b/tests/test_range.py\n@@\n+def test_inclusive():\n+    assert sum_range(1, 3) == 6\n",
+    "gold_patch": "--- a/lib/range.py\n+++ b/lib/range.py\n@@\n-    return sum(range(a, b))\n+    return sum(range(a, b + 1))\n"
+  }
+]

@@ -1,0 +1,20 @@
+# Personal, per-clone collaborator letter — copy .claude/soul.template.md to fill in.
+.claude/soul.md
+
+# Eval run artifacts (regenerated per run — never commit)
+eval_solve_report.json
+eval_gate_report.json
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Node
+node_modules/
+
+# OS / editor junk
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/

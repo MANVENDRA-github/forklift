@@ -9,9 +9,12 @@ forklift is an OSS-contribution agent that runs inside Claude Code: given a GitH
 it runs read → reproduce → fix → verify → drafted PR, halting at every human/legal gate.
 See `docs/SPEC.md` for the full design.
 
-**Current phase: P0 / v0** — `/contribute:solve` only, one local repo, manual push. Do not
-build P1+ surface (gatekeeper subagent, fork flow, other commands, status, resume) until v0
-lands one real PR. If asked to add those now, push back and point here.
+**Current phase: P2 (first slice)** — `/contribute:solve` with the `gatekeeper` subagent and
+**fork flow + gated PR creation**. The solve loop now runs the fix through the cold-context QA
+gate, then (gated) forks if needed, pushes `fix/issue-<n>`, and opens a PR against upstream —
+every GitHub write halts for explicit human approval. Do not build the remaining P2 slices yet
+(revise/reply/status commands, CLA/DCO detection, resume/branch-reconstruction). If asked to add
+those now, push back and point here.
 
 ## Key commands
 
@@ -50,8 +53,26 @@ lands one real PR. If asked to add those now, push back and point here.
 > Every time a mistake is made, add a rule here so it never happens twice.
 > Format: Trigger → Correct behavior → Date.
 
-### Rule 1: GitHub MCP issue reads use issue_read, not get_issue
-- Trigger: reaching for a `get_issue` tool on the GitHub MCP server
-- Correct behavior: use `mcp__github__issue_read` with `method: "get"` (enum also has
-  get_comments, get_sub_issues, get_labels). `get_issue` does not exist on this server.
+### Rule 1: GitHub MCP issue-read tool name varies by server — detect it
+- Trigger: reaching for a GitHub MCP issue-read tool by a hardcoded name
+- Correct behavior: the issue-read tool name VARIES by GitHub MCP server/distribution. The
+  official server exposes `get_issue` (owner, repo, issue_number); some others expose
+  `issue_read` with `method: "get"` (enum also has get_comments, get_sub_issues, get_labels)
+  instead. Detect which is available on the connected server and use that one — never assume.
+- Date: 2026-06-13
+
+### Rule 2: No keystone test possible → halt and label unverified, never fake
+- Trigger: a fix that turns on platform-specific or non-unit-testable behavior, or an issue
+  that can't be reproduced on the local machine (no test seam).
+- Correct behavior: do NOT fabricate a hollow test. Stage the fix, run whatever checks DO
+  work (type-check/lint), and explicitly label the diff UNVERIFIED with what's needed to
+  verify it. Never push an unverified fix.
+- Date: 2026-06-13
+
+### Rule 3: Never write forklift's own files into a target repo
+- Trigger: while operating on a target repo (cwd = the target), being asked to edit any
+  forklift file (CLAUDE.md, SPEC, command files, etc.).
+- Correct behavior: the command only modifies files that are part of the fix, inside the
+  target repo. forklift-repo edits happen in a separate session run from D:\forklift. Never
+  stage forklift config/docs onto a target's branch.
 - Date: 2026-06-13
